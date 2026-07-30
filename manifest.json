@@ -1,6 +1,6 @@
 {
   "name": "キャラコロ・エネコロ ダイスローラー",
-  "short_name": "キャラコロ",
+  "short_name": "エネコロ",
   "description": "キャラコロとエネコロを振れるスタンドアロン対応ダイスローラー",
   "start_url": "./index.html",
   "display": "standalone",
