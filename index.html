@@ -2,8 +2,19 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>キャラコロ・エネコロ ダイスローラー</title>
+  
+  <!-- Web App Manifest & Theme -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f46e5">
+
+  <!-- iOS / Safari Standalone Mode Settings -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="キャラコロ">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
   <style>
     :root {
       --primary-color: #4f46e5;
@@ -17,6 +28,7 @@
 
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -25,10 +37,16 @@
       color: var(--text-color);
       margin: 0;
       padding: 20px;
+      padding-top: max(20px, env(safe-area-inset-top));
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      padding-left: max(20px, env(safe-area-inset-left));
+      padding-right: max(20px, env(safe-area-inset-right));
       display: flex;
       justify-content: center;
       align-items: flex-start;
       min-height: 100vh;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .container {
@@ -46,6 +64,20 @@
       font-size: 1.6rem;
       color: #111827;
       margin-bottom: 20px;
+    }
+
+    /* iOS 案内バナー */
+    .ios-pwa-prompt {
+      display: none;
+      background-color: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      font-size: 0.82rem;
+      color: #1e40af;
+      text-align: left;
+      line-height: 1.4;
     }
 
     /* 設定パネル */
@@ -93,6 +125,8 @@
       border-radius: 8px;
       outline: none;
       transition: border-color 0.2s;
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     .input-group input:focus {
@@ -140,7 +174,6 @@
       font-weight: bold;
       color: #1f2937;
       transition: transform 0.1s ease-in-out;
-      user-select: none;
     }
 
     .dice.special {
@@ -329,6 +362,11 @@
   <div class="container">
     <h1>キャラコロ・エネコロ　ダイスローラー</h1>
 
+    <!-- iOS Home Screen 案内 -->
+    <div class="ios-pwa-prompt" id="iosPrompt">
+      💡 <strong>iOSホーム画面追加ヒント:</strong> Safariの共有ボタン <span style="font-size:1.1em;">⎋</span> から「ホーム画面に追加」をタップすると全画面アプリとして起動できます。
+    </div>
+
     <!-- エネ設定パネル -->
     <div class="settings-panel">
       <div class="settings-title">エネコロ設定</div>
@@ -394,6 +432,22 @@
   </div>
 
   <script>
+    // iOS Safari かつ スタンドアロン表示でない場合に提示バナーを表示
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+    if (isIOS && !isStandalone) {
+      document.getElementById('iosPrompt').style.display = 'block';
+    }
+
+    // Service Worker 登録
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('ServiceWorker registered:', reg.scope))
+          .catch(err => console.log('ServiceWorker registration failed:', err));
+      });
+    }
+
     let rollCounter = 0;
 
     function getSpecialDiceFaces(kanji) {
