@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4DiceRoller</title>
+  <style>
+    :root {
+      --primary-color: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-color: #1f2937;
+      --accent-red: #ef4444;
+      --accent-red-hover: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      padding: 28px;
+      max-width: 680px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.6rem;
+      color: #111827;
+      margin-bottom: 20px;
+    }
+
+    /* 設定パネル */
+    .settings-panel {
+      background-color: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .settings-title {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #4b5563;
+      margin-bottom: 12px;
+    }
+
+    .inputs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .input-group label {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+
+    .input-group input {
+      width: 100%;
+      max-width: 70px;
+      height: 40px;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-group input:focus {
+      border-color: var(--primary-color);
+    }
+
+    /* ダイス表示エリア */
+    .dice-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (min-width: 520px) {
+      .dice-container {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .dice-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .dice-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .dice {
+      width: 90px;
+      height: 90px;
+      background-color: #ffffff;
+      border: 3px solid #e5e7eb;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #1f2937;
+      transition: transform 0.1s ease-in-out;
+      user-select: none;
+    }
+
+    .dice.special {
+      background-color: #fef2f2;
+      border-color: #fecaca;
+      color: #dc2626;
+    }
+
+    .dice.rolling {
+      animation: roll 0.15s infinite linear;
+    }
+
+    @keyframes roll {
+      0% { transform: rotate(-5deg) scale(0.95); }
+      50% { transform: rotate(5deg) scale(1.05); }
+      100% { transform: rotate(-5deg) scale(0.95); }
+    }
+
+    .roll-button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 14px 36px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 9999px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      transition: background-color 0.2s, transform 0.1s;
+      width: 100%;
+      max-width: 240px;
+      margin-bottom: 24px;
+    }
+
+    .roll-button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .roll-button:active {
+      transform: scale(0.97);
+    }
+
+    .roll-button:disabled {
+      background-color: #9ca3af;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    /* 集計結果エリア */
+    .summary-card {
+      background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+      border: 1px solid #bae6fd;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      text-align: left;
+    }
+
+    .summary-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #0369a1;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .summary-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 1rem;
+      color: #0f172a;
+    }
+
+    .summary-item {
+      background: rgba(255, 255, 255, 0.75);
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(186, 230, 253, 0.8);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-item .value {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #0284c7;
+    }
+
+    /* 履歴エリア */
+    .history-section {
+      border-top: 2px dashed #e5e7eb;
+      padding-top: 20px;
+      text-align: left;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .history-title {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #374151;
+    }
+
+    .clear-btn {
+      background-color: transparent;
+      color: #6b7280;
+      border: 1px solid #d1d5db;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .clear-btn:hover {
+      background-color: #fee2e2;
+      color: var(--accent-red);
+      border-color: #fca5a5;
+    }
+
+    .history-list {
+      max-height: 220px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 4px;
+    }
+
+    .history-item {
+      background-color: #f9fafb;
+      border: 1px solid #f3f4f6;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-count {
+      color: #9ca3af;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    .history-details {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .history-dice-tag {
+      background-color: #ffffff;
+      border: 1px solid #e5e7eb;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .history-dice-tag.special {
+      color: #dc2626;
+      background-color: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    .empty-history {
+      color: #9ca3af;
+      text-align: center;
+      padding: 20px 0;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>キャラコロ・エネコロ　ダイスローラー</h1>
+
+    <!-- エネ設定パネル -->
+    <div class="settings-panel">
+      <div class="settings-title">エネコロ設定</div>
+      <div class="inputs-grid">
+        <div class="input-group">
+          <label for="kanji1">エネコロ 1</label>
+          <input type="text" id="kanji1" maxlength="1" value="草">
+        </div>
+        <div class="input-group">
+          <label for="kanji2">エネコロ 2</label>
+          <input type="text" id="kanji2" maxlength="1" value="炎">
+        </div>
+        <div class="input-group">
+          <label for="kanji3">エネコロ 3</label>
+          <input type="text" id="kanji3" maxlength="1" value="毒">
+        </div>
+      </div>
+    </div>
+
+    <!-- サイコロ表示部分 -->
+    <div class="dice-container">
+      <div class="dice-wrapper">
+        <div class="dice-label">キャラコロ 6面</div>
+        <div class="dice" id="dice0">-</div>
+      </div>
+      <div class="dice-wrapper">
+        <div class="dice-label">エネコロ 1</div>
+        <div class="dice special" id="dice1">-</div>
+      </div>
+      <div class="dice-wrapper">
+        <div class="dice-label">エネコロ 2</div>
+        <div class="dice special" id="dice2">-</div>
+      </div>
+      <div class="dice-wrapper">
+        <div class="dice-label">エネコロ 3</div>
+        <div class="dice special" id="dice3">-</div>
+      </div>
+    </div>
+
+    <!-- 実行ボタン -->
+    <button class="roll-button" id="rollBtn" onclick="rollAllDice()">サイコロを振る</button>
+
+    <!-- 結果集計エリア -->
+    <div class="summary-card">
+      <div class="summary-title">
+        <span>##</span> 今回の集計結果
+      </div>
+      <div class="summary-content" id="summaryContent">
+        <div style="color: #64748b; font-size: 0.9rem;">「サイコロを振る」ボタンを押してください。</div>
+      </div>
+    </div>
+
+    <!-- 履歴エリア -->
+    <div class="history-section">
+      <div class="history-header">
+        <div class="history-title">## 振った履歴</div>
+        <button class="clear-btn" onclick="clearHistory()">履歴クリア</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="empty-history">まだ履歴はありません</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let rollCounter = 0;
+
+    function getSpecialDiceFaces(kanji) {
+      const char = kanji.trim() || '字';
+      return [
+        '無',
+        char,
+        char,
+        char,
+        `${char}×2`,
+        `${char}×2`
+      ];
+    }
+
+    function getRandomFace(faces) {
+      const randomIndex = Math.floor(Math.random() * faces.length);
+      return faces[randomIndex];
+    }
+
+    function rollAllDice() {
+      const button = document.getElementById('rollBtn');
+      button.disabled = true;
+
+      const diceElements = [
+        document.getElementById('dice0'),
+        document.getElementById('dice1'),
+        document.getElementById('dice2'),
+        document.getElementById('dice3')
+      ];
+
+      const kanjiInputs = [
+        document.getElementById('kanji1').value,
+        document.getElementById('kanji2').value,
+        document.getElementById('kanji3').value
+      ];
+
+      const diceDefinitions = [
+        ['1', '2', '3', '4', '5', '6'],
+        getSpecialDiceFaces(kanjiInputs[0]),
+        getSpecialDiceFaces(kanjiInputs[1]),
+        getSpecialDiceFaces(kanjiInputs[2])
+      ];
+
+      diceElements.forEach(dice => dice.classList.add('rolling'));
+
+      let counter = 0;
+      const maxFlips = 10;
+      const interval = setInterval(() => {
+        diceElements.forEach((diceEl, index) => {
+          diceEl.textContent = getRandomFace(diceDefinitions[index]);
+        });
+
+        counter++;
+        if (counter >= maxFlips) {
+          clearInterval(interval);
+          
+          // 確定出目の取得
+          const finalResults = diceDefinitions.map(faces => getRandomFace(faces));
+
+          diceElements.forEach((diceEl, index) => {
+            diceEl.textContent = finalResults[index];
+            diceEl.classList.remove('rolling');
+          });
+
+          // 集計と履歴追加
+          rollCounter++;
+          updateSummaryAndHistory(finalResults);
+
+          button.disabled = false;
+        }
+      }, 50);
+    }
+
+    function updateSummaryAndHistory(results) {
+      const normalValue = parseInt(results[0], 10);
+      const specialResults = results.slice(1);
+
+      // ダイスごとの個数集計
+      const kanjiCounts = {};
+
+      specialResults.forEach(res => {
+        if (res === '無') return;
+
+        if (res.endsWith('×2')) {
+          const char = res.replace('×2', '');
+          kanjiCounts[char] = (kanjiCounts[char] || 0) + 2;
+        } else {
+          kanjiCounts[res] = (kanjiCounts[res] || 0) + 1;
+        }
+      });
+
+      // 集計表示の更新
+      const summaryContent = document.getElementById('summaryContent');
+      let summaryHTML = `<div class="summary-item">キャラコロ: <span class="value">${normalValue}</span></div>`;
+
+      const keys = Object.keys(kanjiCounts);
+      if (keys.length === 0) {
+        summaryHTML += `<div class="summary-item">エネコロ: <span class="value">すべて「無」</span></div>`;
+      } else {
+        keys.forEach(key => {
+          summaryHTML += `<div class="summary-item">「${key}」合計: <span class="value">${kanjiCounts[key]}個</span></div>`;
+        });
+      }
+
+      summaryContent.innerHTML = summaryHTML;
+
+      // 履歴リストの更新（最新結果が一番上）
+      const historyList = document.getElementById('historyList');
+      if (rollCounter === 1) {
+        historyList.innerHTML = '';
+      }
+
+      const historyItem = document.createElement('div');
+      historyItem.className = 'history-item';
+
+      const detailsHTML = `
+        <span class="history-dice-tag">${results[0]}</span>
+        <span class="history-dice-tag special">${results[1]}</span>
+        <span class="history-dice-tag special">${results[2]}</span>
+        <span class="history-dice-tag special">${results[3]}</span>
+      `;
+
+      historyItem.innerHTML = `
+        <div>
+          <span class="history-count">#${rollCounter}</span>
+          <span class="history-details">${detailsHTML}</span>
+        </div>
+      `;
+
+      historyList.insertBefore(historyItem, historyList.firstChild);
+    }
+
+    function clearHistory() {
+      rollCounter = 0;
+      const historyList = document.getElementById('historyList');
+      historyList.innerHTML = '<div class="empty-history">まだ履歴はありません</div>';
+      
+      const summaryContent = document.getElementById('summaryContent');
+      summaryContent.innerHTML = '<div style="color: #64748b; font-size: 0.9rem;">「サイコロを振る」ボタンを押してください。</div>';
+
+      document.getElementById('dice0').textContent = '-';
+      document.getElementById('dice1').textContent = '-';
+      document.getElementById('dice2').textContent = '-';
+      document.getElementById('dice3').textContent = '-';
+    }
+  </script>
+</body>
+</html>
