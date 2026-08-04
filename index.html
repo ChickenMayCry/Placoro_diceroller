@@ -105,26 +105,25 @@
     .input-group label {
       font-size: 0.8rem;
       color: #6b7280;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
 
-    .input-group input {
+    .ene-select-btn {
       width: 100%;
-      max-width: 70px;
-      height: 40px;
-      text-align: center;
-      font-size: 1.2rem;
+      max-width: 110px;
+      padding: 10px 4px;
+      font-size: 0.9rem;
       font-weight: bold;
-      border: 2px solid #d1d5db;
+      background-color: #ffffff;
+      color: var(--primary-color);
+      border: 2px solid var(--primary-color);
       border-radius: 8px;
-      outline: none;
-      transition: border-color 0.2s;
-      user-select: text;
-      -webkit-user-select: text;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    .input-group input:focus {
-      border-color: var(--primary-color);
+    .ene-select-btn:hover {
+      background-color: #e0e7ff;
     }
 
     /* ダイス表示エリア */
@@ -164,10 +163,12 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       font-weight: bold;
       color: #1f2937;
       transition: transform 0.1s ease-in-out;
+      word-break: break-all;
+      padding: 4px;
     }
 
     .dice.special {
@@ -349,12 +350,129 @@
       padding: 20px 0;
       font-size: 0.85rem;
     }
+
+    /* モーダル（展開図設定ダイアログ） */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.4);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 20px;
+      width: 90%;
+      max-width: 380px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      color: #1f2937;
+    }
+
+    /* 展開図レイアウト */
+    .net-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 8px;
+      width: 250px;
+      margin: 0 auto 20px auto;
+    }
+
+    .net-cell {
+      width: 100%;
+      height: 60px;
+    }
+
+    .net-cell.empty {
+      visibility: hidden;
+    }
+
+    .net-cell-split {
+      display: flex;
+      gap: 4px;
+      width: 100%;
+      height: 100%;
+      padding: 3px;
+      background-color: #eff6ff;
+      border: 2px solid #3b82f6;
+      border-radius: 8px;
+    }
+
+    .net-input {
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: bold;
+      border: 2px solid #3b82f6;
+      border-radius: 8px;
+      background-color: #eff6ff;
+      color: #1d4ed8;
+      outline: none;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .net-cell-split .net-input {
+      font-size: 0.85rem;
+      padding: 0 2px;
+      border: 1px solid #93c5fd;
+      border-radius: 6px;
+      background-color: #ffffff;
+    }
+
+    .net-input:focus {
+      border-color: #1d4ed8;
+      background-color: #ffffff;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .modal-btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+    }
+
+    .modal-btn.cancel {
+      background-color: #e5e7eb;
+      color: #374151;
+    }
+
+    .modal-btn.save {
+      background-color: var(--primary-color);
+      color: white;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>キャラコロ・エネコロ　ダイスローラー</h1>
+    <h1>キャラコロ・エネコロ ダイスローラー</h1>
 
     <!-- iOS Home Screen 案内 -->
     <div class="ios-pwa-prompt" id="iosPrompt">
@@ -363,19 +481,19 @@
 
     <!-- エネ設定パネル -->
     <div class="settings-panel">
-      <div class="settings-title">エネコロ設定</div>
+      <div class="settings-title">エネコロ設定（タップして展開図を編集）</div>
       <div class="inputs-grid">
         <div class="input-group">
-          <label for="kanji1">エネコロ 1</label>
-          <input type="text" id="kanji1" maxlength="1" value="草">
+          <label>エネコロ 1</label>
+          <button type="button" class="ene-select-btn" onclick="openNetModal(1)">編集</button>
         </div>
         <div class="input-group">
-          <label for="kanji2">エネコロ 2</label>
-          <input type="text" id="kanji2" maxlength="1" value="炎">
+          <label>エネコロ 2</label>
+          <button type="button" class="ene-select-btn" onclick="openNetModal(2)">編集</button>
         </div>
         <div class="input-group">
-          <label for="kanji3">エネコロ 3</label>
-          <input type="text" id="kanji3" maxlength="1" value="毒">
+          <label>エネコロ 3</label>
+          <button type="button" class="ene-select-btn" onclick="openNetModal(3)">編集</button>
         </div>
       </div>
     </div>
@@ -425,6 +543,48 @@
     </div>
   </div>
 
+  <!-- 展開図モーダル -->
+  <div class="modal-overlay" id="netModal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalTitle">エネコロ1 展開図設定</div>
+      <div class="net-grid">
+        <!-- 行1: 上面 (インデックス 0) -->
+        <div class="net-cell empty"></div>
+        <div class="net-cell"><input type="text" class="net-input" id="face0" placeholder="面1"></div>
+        <div class="net-cell empty"></div>
+
+        <!-- 行2: 左・中・右面 (インデックス 1, 2, 3) -->
+        <div class="net-cell"><input type="text" class="net-input" id="face1" placeholder="面2"></div>
+        <div class="net-cell"><input type="text" class="net-input" id="face2" placeholder="面3"></div>
+        <div class="net-cell"><input type="text" class="net-input" id="face3" placeholder="面4"></div>
+
+        <!-- 行3: 下面 (インデックス 4, 5 -> eneDiceData 5, 6) -->
+        <div class="net-cell empty"></div>
+        <div class="net-cell">
+          <div class="net-cell-split">
+            <input type="text" class="net-input" id="face4" placeholder="面5">
+            <input type="text" class="net-input" id="face5" placeholder="面6">
+          </div>
+        </div>
+        <div class="net-cell empty"></div>
+
+        <!-- 行4: 底面 (インデックス 6, 7 -> eneDiceData 7, 8) -->
+        <div class="net-cell empty"></div>
+        <div class="net-cell">
+          <div class="net-cell-split">
+            <input type="text" class="net-input" id="face6" placeholder="面7">
+            <input type="text" class="net-input" id="face7" placeholder="面8">
+          </div>
+        </div>
+        <div class="net-cell empty"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" onclick="closeNetModal()">キャンセル</button>
+        <button class="modal-btn save" onclick="saveNetModal()">保存</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // iOS Safari かつ スタンドアロン表示でない場合に提示バナーを表示
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -442,18 +602,68 @@
       });
     }
 
+    // 各エネコロのデフォルト面設定（配列インデックス 0〜7 の全8要素）
+    const eneDiceData = {
+      1: ['無', '草', '草', '草', '炎', '飛', '炎', '飛'],
+      2: ['無', '炎', '炎', '炎', '炎', '飛', '炎', '飛'],
+      3: ['無', '毒', '毒', '毒', '炎', '飛', '炎', '飛']
+    };
+
+    let activeEneIndex = null;
     let rollCounter = 0;
 
-    function getSpecialDiceFaces(kanji) {
-      const char = kanji.trim() || '字';
-      return [
-        '無',
-        char,
-        char,
-        char,
-        `${char}×2`,
-        `${char}×2`
+    // モーダルを開く
+    function openNetModal(index) {
+      activeEneIndex = index;
+      document.getElementById('modalTitle').textContent = `エネコロ ${index} 展開図設定`;
+      
+      const faces = eneDiceData[index];
+      for (let i = 0; i < 8; i++) {
+        document.getElementById(`face${i}`).value = faces[i] || '';
+      }
+      document.getElementById('netModal').classList.add('active');
+    }
+
+    // モーダルを閉じる
+    function closeNetModal() {
+      document.getElementById('netModal').classList.remove('active');
+      activeEneIndex = null;
+    }
+
+    // モーダルの設定内容を保存
+    function saveNetModal() {
+      if (!activeEneIndex) return;
+
+      const newFaces = [];
+      for (let i = 0; i < 8; i++) {
+        const val = document.getElementById(`face${i}`).value.trim();
+        newFaces.push(val === '' ? '無' : val);
+      }
+      eneDiceData[activeEneIndex] = newFaces;
+      closeNetModal();
+    }
+
+    // エネコロの出目を決定する関数（6面ダイスとしての出目を取得）
+    function getRandomEneFace(faces) {
+      const options = [
+        faces[0],
+        faces[1],
+        faces[2],
+        faces[3],
+        combineFaces(faces[4], faces[5]),
+        combineFaces(faces[6], faces[7])
       ];
+      const randomIndex = Math.floor(Math.random() * options.length);
+      return options[randomIndex];
+    }
+
+    function combineFaces(f1, f2) {
+      const v1 = (f1 || '').trim();
+      const v2 = (f2 || '').trim();
+      if ((!v1 || v1 === '無') && (!v2 || v2 === '無')) return '無';
+      if (!v1 || v1 === '無') return v2;
+      if (!v2 || v2 === '無') return v1;
+      return `${v1},${v2}`;
     }
 
     function getRandomFace(faces) {
@@ -472,34 +682,29 @@
         document.getElementById('dice3')
       ];
 
-      const kanjiInputs = [
-        document.getElementById('kanji1').value,
-        document.getElementById('kanji2').value,
-        document.getElementById('kanji3').value
-      ];
-
-      const diceDefinitions = [
-        ['1', '2', '3', '4', '5', '6'],
-        getSpecialDiceFaces(kanjiInputs[0]),
-        getSpecialDiceFaces(kanjiInputs[1]),
-        getSpecialDiceFaces(kanjiInputs[2])
-      ];
+      const normalFaces = ['1', '2', '3', '4', '5', '6'];
 
       diceElements.forEach(dice => dice.classList.add('rolling'));
 
       let counter = 0;
       const maxFlips = 10;
       const interval = setInterval(() => {
-        diceElements.forEach((diceEl, index) => {
-          diceEl.textContent = getRandomFace(diceDefinitions[index]);
-        });
+        diceElements[0].textContent = getRandomFace(normalFaces);
+        diceElements[1].textContent = getRandomEneFace(eneDiceData[1]);
+        diceElements[2].textContent = getRandomEneFace(eneDiceData[2]);
+        diceElements[3].textContent = getRandomEneFace(eneDiceData[3]);
 
         counter++;
         if (counter >= maxFlips) {
           clearInterval(interval);
           
           // 確定出目の取得
-          const finalResults = diceDefinitions.map(faces => getRandomFace(faces));
+          const finalResults = [
+            getRandomFace(normalFaces),
+            getRandomEneFace(eneDiceData[1]),
+            getRandomEneFace(eneDiceData[2]),
+            getRandomEneFace(eneDiceData[3])
+          ];
 
           diceElements.forEach((diceEl, index) => {
             diceEl.textContent = finalResults[index];
@@ -523,14 +728,26 @@
       const kanjiCounts = {};
 
       specialResults.forEach(res => {
-        if (res === '無') return;
+        if (!res || res === '無') return;
 
-        if (res.endsWith('×2')) {
-          const char = res.replace('×2', '');
-          kanjiCounts[char] = (kanjiCounts[char] || 0) + 2;
-        } else {
-          kanjiCounts[res] = (kanjiCounts[res] || 0) + 1;
-        }
+        // カンマ（全角/半角/読点）や「×」表現で区切る
+        const items = res.split(/[,，、]/);
+
+        items.forEach(item => {
+          const trimmed = item.trim();
+          if (!trimmed || trimmed === '無') return;
+
+          if (trimmed.includes('×')) {
+            const parts = trimmed.split('×');
+            const char = parts[0].trim();
+            const multiplier = parseInt(parts[1], 10) || 1;
+            if (char && char !== '無') {
+              kanjiCounts[char] = (kanjiCounts[char] || 0) + multiplier;
+            }
+          } else {
+            kanjiCounts[trimmed] = (kanjiCounts[trimmed] || 0) + 1;
+          }
+        });
       });
 
       // 集計表示の更新
